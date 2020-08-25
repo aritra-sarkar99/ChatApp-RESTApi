@@ -1,0 +1,30 @@
+.receive{
+    background: rgb(40, 172, 69);
+    color: beige;
+    padding: 10px 15px;
+    border-radius: 20px;
+    display: inline-block;
+    word-break: break-all;
+}
+
+.sent{
+    background: darkslategray;
+    color: beige;
+    padding: 10px 15px;
+    border-radius: 20px;
+    display: inline-block;
+    word-break: break-all;
+}
+
+.card-body{
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+/* .chatcol{
+    
+} */
+
+/* .chatrow{
+    display: inline-block;
+
+} */

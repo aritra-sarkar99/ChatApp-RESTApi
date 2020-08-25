@@ -1,24 +1,46 @@
 const fs = require('fs')
+const jwt = require('jsonwebtoken')
 
 const Users = require('../models/users')
 
-exports.signup = (req,res) => {
-    const user = new Users(req.body)
-    user.save().then(result => {res.status(200).json(result)})
-    .catch(err => {
-        res.json({error:true,message: "User signup failed "})
+exports.UserDetails = (req,res)=>{
+    if(req.user){
+        res.status(200).json({
+            _id: req.user._id,
+            name: req.user.name
+        })
+    }
+}
+
+exports.signup = async (req,res) => {
+    let existUser = await Users.findOne({email: req.body.email})
+    if(existUser){
+        return res.json({error:true,message: "User with that email already exists"})
+    }
+    else{
+        const user = new Users(req.body)
+        user.save().then(result => {return res.status(200).json({
+            success: true,
+            message: "You have successfully registered"
+        })})
+        .catch(err => {
+        return res.json({error:true,message: "User signup failed "})
     })
+    }
 
 }
 
 exports.signin = (req,res) => {
-    // const email = req.body.email
-    // const password = req.body.password
-    // Users.findOne({email,password}).select('-password')
-    // .then(result => {
-    //     req.session.profile = result
-    //     res.status(200).json(result)
-    // }).catch(err => {res.json({error: true,message: "Failed to sign in"})})
+    const email = req.body.email
+    const password = req.body.password
+    Users.findOne({email,password}).select('-password -profilePic')
+    .then(result => {
+        let token = jwt.sign({_id:result._id,name:result.name},'keygoeshere')
+        return res.status(200).json({
+            token: token,
+            expiresIn: 3600
+        })
+    }).catch(err => {return res.json({error: true,message: "Incorrect email or password"})})
 }
 
 exports.profilePic = (req,res) => {
@@ -43,11 +65,18 @@ exports.profilePic = (req,res) => {
 }
 
 exports.signout = (req,res) => {
-    // if(req.session.profile){
-    //     req.session.profile = undefined
-    //     res.status(200).json({success: true,message: "Successfully logged out"})
-    // }
-    // else{
-    //     res.json({message: "You are not logged in"})
-    // }
+    decodedtoken = null
+    return res.status(200).json({success: true,message: "Successfully logged out"})
 }
+
+exports.verifyToken = (req,res,next) => {
+    try {
+        let token = req.headers.authorization.split(" ")[1]
+        const decodedtoken = jwt.verify(token,'keygoeshere')
+        req.user = {_id: decodedtoken._id,name: decodedtoken.name}
+        next()
+    } catch (error) {
+        res.status(401).json({error:true,message: "Authentication failed"})
+    }
+}
+
