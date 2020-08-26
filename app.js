@@ -69,6 +69,9 @@ app.use(cors())
 app.use('/api',Auth)
 app.use('/api',UserRoute)
 app.use('/api',ChatRoute)
+app.get('/',(req,res) => {
+    res.sendFile('index.html',{root: __dirname })
+})
 /////
 
 
